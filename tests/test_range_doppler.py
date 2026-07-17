@@ -8,7 +8,7 @@ from optical_iscai.waveform import PCFMCWParameters, SPEED_OF_LIGHT_M_S
 def make_params():
     return PCFMCWParameters(
         carrier_frequency_hz=193.4e12,
-        bandwidth_hz=20e6,
+        bandwidth_hz=1e6,
         chirp_duration_s=100e-6,
         data_rate_bps=10e3,
         sample_rate_hz=2e6,

@@ -86,6 +86,48 @@ def test_frame_range_doppler_peak_is_near_target() -> None:
     assert estimated_velocity == pytest.approx(target.radial_velocity_m_s, abs=0.6 * velocity_bin)
 
 
+def test_noisy_frame_is_reproducible_with_fixed_seed() -> None:
+    params = compact_parameters()
+    config = FrameConfiguration(
+        chirp_count=4,
+        receiver_snr_db=8.0,
+        random_seed=42,
+    )
+    target = PointTarget(range_m=20.0, amplitude=1.0)
+
+    first = simulate_frame(params, [target], config)
+    second = simulate_frame(params, [target], config)
+
+    np.testing.assert_array_equal(first.received, second.received)
+    np.testing.assert_array_equal(first.beat, second.beat)
+    np.testing.assert_array_equal(
+        first.range_doppler.power,
+        second.range_doppler.power,
+    )
+
+
+def test_receiver_noise_changes_received_signal_but_not_ground_truth() -> None:
+    params = compact_parameters()
+    target = PointTarget(range_m=20.0, radial_velocity_m_s=1.0)
+    clean = simulate_frame(
+        params,
+        [target],
+        FrameConfiguration(chirp_count=4),
+    )
+    noisy = simulate_frame(
+        params,
+        [target],
+        FrameConfiguration(chirp_count=4, receiver_snr_db=5.0, random_seed=1),
+    )
+
+    assert not np.array_equal(clean.received, noisy.received)
+    np.testing.assert_array_equal(clean.target_ranges_m, noisy.target_ranges_m)
+    np.testing.assert_array_equal(
+        clean.target_velocities_m_s,
+        noisy.target_velocities_m_s,
+    )
+
+
 def test_frame_rejects_invalid_configuration_and_targets() -> None:
     params = compact_parameters()
 
@@ -107,6 +149,13 @@ def test_frame_rejects_invalid_configuration_and_targets() -> None:
                 chirp_count=2,
                 chirp_repetition_interval_s=params.chirp_duration_s / 2.0,
             ),
+        )
+
+    with pytest.raises(ValueError, match="receiver_snr_db"):
+        simulate_frame(
+            params,
+            [PointTarget(range_m=10.0)],
+            FrameConfiguration(chirp_count=2, receiver_snr_db=np.inf),
         )
 
 

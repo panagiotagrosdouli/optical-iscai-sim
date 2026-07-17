@@ -1,0 +1,215 @@
+project:
+  name: optical-iscai-sim
+  source_doi: 10.1109/LPT.2025.3649597
+  config_role: paper_baseline
+  warning: >-
+    Only paper-explicit and safely derived values are enabled. Missing
+    parameters remain null until supported by an external model, calibration,
+    or a documented scenario assumption.
+
+constants:
+  speed_of_light:
+    value: 299792458.0
+    unit: m/s
+    provenance: physical_constant
+
+waveform:
+  type:
+    value: PC-FMCW
+    provenance: paper_explicit
+  carrier_frequency:
+    value: 193.4e12
+    unit: Hz
+    provenance: paper_explicit
+  chirp_bandwidth:
+    value: 10.0e9
+    unit: Hz
+    provenance: paper_explicit
+  chirp_duration:
+    value: 10.0e-6
+    unit: s
+    provenance: paper_explicit
+  chirp_slope:
+    value: 1.0e15
+    unit: Hz/s
+    provenance: paper_derived
+  optical_wavelength:
+    value: 1.549081996e-6
+    unit: m
+    provenance: paper_derived
+  ideal_range_resolution:
+    value: 0.0149896229
+    unit: m
+    provenance: paper_derived
+  sample_rate:
+    value: null
+    unit: Hz
+    provenance: missing
+  number_of_chirps:
+    value: null
+    unit: count
+    provenance: missing
+
+communication:
+  modulation:
+    value: DPSK
+    provenance: paper_explicit
+  data_rate:
+    value: 1.0e9
+    unit: bit/s
+    provenance: paper_explicit
+  symbol_duration:
+    value: 1.0e-9
+    unit: s
+    provenance: paper_derived
+  symbols_per_chirp:
+    value: 10000
+    unit: count
+    provenance: paper_derived
+  packet_size:
+    value: null
+    unit: bit
+    provenance: missing
+
+receiver:
+  architecture:
+    value: coherent
+    provenance: paper_explicit
+  phase_code_compensation:
+    value: group_delay_filter
+    provenance: paper_explicit
+  range_processing:
+    value: FFT
+    provenance: paper_explicit
+  doppler_processing:
+    value: FFT
+    provenance: paper_explicit
+
+cfar:
+  type:
+    value: 2D_CA_CFAR
+    provenance: paper_explicit
+  training_cells_range:
+    value: null
+    provenance: missing
+  training_cells_doppler:
+    value: null
+    provenance: missing
+  guard_cells_range:
+    value: null
+    provenance: missing
+  guard_cells_doppler:
+    value: null
+    provenance: missing
+  target_pfa:
+    value: null
+    provenance: missing
+
+tracking:
+  method:
+    value: multidimensional_hough_transform_TBD
+    provenance: paper_explicit
+  projections:
+    value: [xy, xt, yt]
+    provenance: paper_explicit
+  accumulator_filter:
+    value: 3x3_mean
+    provenance: paper_explicit
+  fusion:
+    value: AND_logic
+    provenance: paper_explicit
+  rolling_window_length:
+    value: null
+    provenance: missing
+  hough_vote_threshold:
+    value: null
+    provenance: missing
+  supporting_point_distance_threshold:
+    value: null
+    provenance: missing
+  minimum_common_points:
+    value: null
+    provenance: missing
+  stitching_threshold:
+    value: null
+    provenance: missing
+  position_cost_weight:
+    value: null
+    provenance: missing
+  kinematic_cost_weight:
+    value: null
+    provenance: missing
+
+illumination:
+  method:
+    value: adaptive_driving_beam
+    provenance: paper_explicit
+  standard:
+    value: SAE_J3069
+    provenance: paper_explicit
+  transition_profile:
+    value: raised_cosine
+    provenance: paper_explicit
+  min_transition_distance:
+    value: null
+    unit: m
+    provenance: missing
+  max_transition_distance:
+    value: null
+    unit: m
+    provenance: missing
+  camera_headlamp_lateral_offset:
+    value: null
+    unit: m
+    provenance: missing
+  safety_margin:
+    value: null
+    unit: rad
+    provenance: missing
+
+paper_validation_targets:
+  data_rate:
+    value: 1.0e9
+    unit: bit/s
+  maximum_ranging_error:
+    value: 0.038
+    unit: m
+  linear_track_parameter_errors:
+    value: [0.1251, 0.2348]
+    unit: paper_units
+  nonlinear_track_mean_deviation:
+    value: 1.6787
+    unit: paper_units
+
+paper_scenarios:
+  oncoming_vehicle:
+    ego_speed:
+      value: 40.0
+      unit: km/h
+    target_speed:
+      value: 30.0
+      unit: km/h
+    initial_separation:
+      value: 150.0
+      unit: m
+  preceding_vehicles:
+    ego_speed:
+      value: 50.0
+      unit: km/h
+    target_count:
+      value: 2
+      unit: count
+    initial_spacing:
+      value: 30.0
+      unit: m
+  linear_tracking:
+    spatial_extent:
+      value: [100, 100]
+      unit: paper_units
+    linear_track_count:
+      value: 2
+      unit: count
+    noise:
+      value: gaussian
+    clutter:
+      value: random

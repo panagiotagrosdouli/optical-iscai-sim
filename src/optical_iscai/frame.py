@@ -1,9 +1,9 @@
 """Multi-chirp frame simulation for optical PC-FMCW sensing.
 
 The frame simulator connects waveform generation, point-target propagation,
-coherent dechirping, and two-dimensional range-Doppler processing.  Target
-range is updated at every chirp start, while Doppler phase remains continuous
-across slow time.
+optional receiver noise, coherent dechirping, and two-dimensional
+range-Doppler processing. Target range is updated at every chirp start, while
+Doppler phase remains continuous across slow time.
 """
 
 from __future__ import annotations
@@ -13,6 +13,7 @@ from dataclasses import dataclass
 import numpy as np
 from numpy.typing import NDArray
 
+from optical_iscai.noise import add_complex_awgn
 from optical_iscai.propagation import (
     PointTarget,
     generate_multi_target_echo,
@@ -33,6 +34,8 @@ class FrameConfiguration:
     n_doppler_fft: int | None = None
     range_window: str | None = "hann"
     doppler_window: str | None = "hann"
+    receiver_snr_db: float | None = None
+    random_seed: int | None = None
 
     def repetition_interval_s(self, params: PCFMCWParameters) -> float:
         interval = (
@@ -53,6 +56,14 @@ class FrameConfiguration:
         if self.chirp_count < 2:
             raise ValueError("chirp_count must be at least two")
         self.repetition_interval_s(params)
+
+        if self.receiver_snr_db is not None and not np.isfinite(self.receiver_snr_db):
+            raise ValueError("receiver_snr_db must be finite when provided")
+        if self.random_seed is not None:
+            if isinstance(self.random_seed, bool) or int(self.random_seed) != self.random_seed:
+                raise ValueError("random_seed must be an integer when provided")
+            if self.random_seed < 0:
+                raise ValueError("random_seed must be non-negative")
 
 
 @dataclass(frozen=True, slots=True)
@@ -104,9 +115,10 @@ def simulate_frame(
 ) -> FrameResult:
     """Simulate a coherent multi-chirp frame and its range-Doppler map.
 
-    The same phase-coded bit sequence is transmitted on every chirp.  This is a
-    deterministic baseline; later dataset generators may provide one sequence
-    per chirp and store those communication symbols as explicit metadata.
+    The same phase-coded bit sequence is transmitted on every chirp. When
+    ``receiver_snr_db`` is configured, independent circular complex AWGN is
+    added to each received chirp before dechirping. ``random_seed`` makes the
+    complete noisy frame exactly reproducible.
     """
 
     frame_config = FrameConfiguration() if config is None else config
@@ -122,6 +134,7 @@ def simulate_frame(
     chirp_count = int(frame_config.chirp_count)
     sample_count = chirp.size
     repetition_interval = frame_config.repetition_interval_s(params)
+    rng = np.random.default_rng(frame_config.random_seed)
 
     transmitted = np.tile(chirp, (chirp_count, 1)).astype(np.complex128, copy=False)
     received = np.zeros((chirp_count, sample_count), dtype=np.complex128)
@@ -136,13 +149,21 @@ def simulate_frame(
             start_time,
             params.wavelength_m,
         )
-        received[chirp_index] = generate_multi_target_echo(
+        received_chirp = generate_multi_target_echo(
             local_time,
             chirp,
             snapshots,
             params.wavelength_m,
         )
-        beat[chirp_index] = dechirp(chirp, received[chirp_index])
+        if frame_config.receiver_snr_db is not None:
+            received_chirp = add_complex_awgn(
+                received_chirp,
+                frame_config.receiver_snr_db,
+                rng=rng,
+            )
+
+        received[chirp_index] = received_chirp
+        beat[chirp_index] = dechirp(chirp, received_chirp)
         ranges[chirp_index] = [target.range_m for target in snapshots]
         velocities[chirp_index] = [
             target.radial_velocity_m_s for target in snapshots

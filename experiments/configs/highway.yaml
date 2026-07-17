@@ -1,32 +1,45 @@
 name: highway-snr-sweep
 
-# Replace this reference with the project scenario adapter used for the experiment.
-# The callable must accept (parameters: dict, rng: numpy.random.Generator)
-# and return optical_iscai.sequence.SequenceResult.
+# Baseline executable point-target scenario. Target amplitudes are controlled
+# complex-envelope inputs and are not yet derived from a calibrated optical link budget.
 simulator: optical_iscai.scenarios:simulate_highway
 
 output: results/highway-snr-sweep
 overwrite: false
 
 monte_carlo:
-  repetitions: 100
+  repetitions: 3
   seed: 42
 
 evaluation:
   range_gate_m: 5.0
-  velocity_gate_m_s: 3.0
+  velocity_gate_m_s: 0.03
   confirmed_only: true
 
 parameters:
-  frame_count: 32
+  frame_count: 8
   frame_interval_s: 0.001
+  chirp_count: 16
   target_count: 3
-  visibility_m: 10000.0
+  range_min_m: 20.0
+  range_max_m: 120.0
+  velocity_min_m_s: -0.02
+  velocity_max_m_s: 0.02
+  amplitude_min: 0.6
+  amplitude_max: 1.0
+
+  # Numerically tractable baseline waveform for routine CI and local runs.
+  carrier_frequency_hz: 193400000000000.0
+  bandwidth_hz: 20000000.0
+  chirp_duration_s: 0.00002
+  data_rate_bps: 1000000.0
+  sample_rate_hz: 40000000.0
 
 sweep:
-  snr_db: [-20, -15, -10, -5, 0, 5, 10, 15, 20]
+  snr_db: [-10, -5, 0, 5, 10]
 
 metadata:
   scenario: highway
-  purpose: sensing performance versus SNR
+  purpose: executable baseline sensing performance versus SNR
+  model_status: uncalibrated_point_target_baseline
   reference: Phase-coded FMCW Laser Headlamp for Integrated Sensing, Communication, and Illumination

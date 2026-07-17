@@ -1,0 +1,309 @@
+schema_version: 0.1.0
+name: optical_iscai_sim_dataset
+row_definition: >-
+  One row represents one simulated system state or evaluation point. Sequence
+  datasets must additionally include scenario_id, sequence_id, and timestamp_s.
+
+required_metadata_columns:
+  scenario_id:
+    dtype: string
+    role: identifier
+  sample_id:
+    dtype: int64
+    role: identifier
+  random_seed:
+    dtype: int64
+    role: reproducibility
+  simulator_version:
+    dtype: string
+    role: reproducibility
+  config_hash:
+    dtype: string
+    role: reproducibility
+
+columns:
+  timestamp_s:
+    dtype: float64
+    unit: s
+    role: input
+    provenance: scenario_assumption
+
+  target_count:
+    dtype: int32
+    unit: count
+    role: input
+    provenance: scenario_assumption
+
+  target_range_m:
+    dtype: float64
+    unit: m
+    role: input
+    provenance: scenario_assumption
+
+  target_radial_velocity_mps:
+    dtype: float64
+    unit: m/s
+    role: input
+    provenance: scenario_assumption
+
+  target_lateral_offset_m:
+    dtype: float64
+    unit: m
+    role: input
+    provenance: scenario_assumption
+
+  carrier_frequency_hz:
+    dtype: float64
+    unit: Hz
+    role: input
+    default: 193.4e12
+    provenance: paper_explicit
+
+  optical_wavelength_m:
+    dtype: float64
+    unit: m
+    role: derived_input
+    default: 1.549081996e-6
+    provenance: paper_derived
+
+  chirp_bandwidth_hz:
+    dtype: float64
+    unit: Hz
+    role: input
+    default: 10.0e9
+    provenance: paper_explicit
+
+  chirp_duration_s:
+    dtype: float64
+    unit: s
+    role: input
+    default: 10.0e-6
+    provenance: paper_explicit
+
+  chirp_slope_hz_per_s:
+    dtype: float64
+    unit: Hz/s
+    role: derived_input
+    default: 1.0e15
+    provenance: paper_derived
+
+  data_rate_bps:
+    dtype: float64
+    unit: bit/s
+    role: input
+    default: 1.0e9
+    provenance: paper_explicit
+
+  modulation:
+    dtype: category
+    role: input
+    allowed: [DPSK]
+    provenance: paper_explicit
+
+  sample_rate_hz:
+    dtype: float64
+    unit: Hz
+    role: input
+    nullable: true
+    provenance: scenario_assumption
+
+  number_of_chirps:
+    dtype: int32
+    unit: count
+    role: input
+    nullable: true
+    provenance: scenario_assumption
+
+  snr_linear:
+    dtype: float64
+    role: intermediate
+    nullable: true
+    provenance: external_model
+
+  snr_db:
+    dtype: float64
+    unit: dB
+    role: intermediate
+    nullable: true
+    provenance: external_model
+
+  estimated_range_m:
+    dtype: float64
+    unit: m
+    role: output
+    nullable: true
+    provenance: simulator_output
+
+  range_error_m:
+    dtype: float64
+    unit: m
+    role: metric
+    nullable: true
+    provenance: simulator_output
+
+  estimated_radial_velocity_mps:
+    dtype: float64
+    unit: m/s
+    role: output
+    nullable: true
+    provenance: simulator_output
+
+  velocity_error_mps:
+    dtype: float64
+    unit: m/s
+    role: metric
+    nullable: true
+    provenance: simulator_output
+
+  delay_crlb_s2:
+    dtype: float64
+    unit: s^2
+    role: bound
+    nullable: true
+    provenance: paper_model
+
+  doppler_crlb_hz2:
+    dtype: float64
+    unit: Hz^2
+    role: bound
+    nullable: true
+    provenance: paper_model
+
+  cfar_noise_estimate:
+    dtype: float64
+    role: intermediate
+    nullable: true
+    provenance: simulator_output
+
+  cfar_threshold:
+    dtype: float64
+    role: intermediate
+    nullable: true
+    provenance: simulator_output
+
+  detected:
+    dtype: bool
+    role: output
+    nullable: true
+    provenance: simulator_output
+
+  detection_probability:
+    dtype: float64
+    role: metric
+    valid_range: [0.0, 1.0]
+    nullable: true
+    provenance: simulator_output
+
+  false_alarm_probability:
+    dtype: float64
+    role: metric
+    valid_range: [0.0, 1.0]
+    nullable: true
+    provenance: simulator_output
+
+  transmitted_bit:
+    dtype: int8
+    role: input
+    valid_range: [0, 1]
+    nullable: true
+    provenance: scenario_assumption
+
+  received_bit:
+    dtype: int8
+    role: output
+    valid_range: [0, 1]
+    nullable: true
+    provenance: simulator_output
+
+  bit_error:
+    dtype: bool
+    role: metric
+    nullable: true
+    provenance: simulator_output
+
+  ber:
+    dtype: float64
+    role: metric
+    valid_range: [0.0, 1.0]
+    nullable: true
+    provenance: simulator_output
+
+  hough_candidates_xy:
+    dtype: int32
+    unit: count
+    role: intermediate
+    nullable: true
+    provenance: simulator_output
+
+  hough_candidates_xt:
+    dtype: int32
+    unit: count
+    role: intermediate
+    nullable: true
+    provenance: simulator_output
+
+  hough_candidates_yt:
+    dtype: int32
+    unit: count
+    role: intermediate
+    nullable: true
+    provenance: simulator_output
+
+  common_support_points:
+    dtype: int32
+    unit: count
+    role: intermediate
+    nullable: true
+    provenance: simulator_output
+
+  track_validated:
+    dtype: bool
+    role: output
+    nullable: true
+    provenance: simulator_output
+
+  trajectory_deviation:
+    dtype: float64
+    unit: scenario_units
+    role: metric
+    nullable: true
+    provenance: simulator_output
+
+  adb_shadow_angle_start_rad:
+    dtype: float64
+    unit: rad
+    role: output
+    nullable: true
+    provenance: paper_model
+
+  adb_shadow_angle_end_rad:
+    dtype: float64
+    unit: rad
+    role: output
+    nullable: true
+    provenance: paper_model
+
+  adb_intensity_scale:
+    dtype: float64
+    role: output
+    valid_range: [0.0, 1.0]
+    nullable: true
+    provenance: paper_model
+
+quality_rules:
+  - target_range_m must be nonnegative
+  - chirp_bandwidth_hz must be positive
+  - chirp_duration_s must be positive
+  - carrier_frequency_hz must be positive
+  - probabilities must lie in [0, 1]
+  - every row must preserve parameter provenance through its config_hash
+  - nullable outputs must remain null when their responsible model is disabled
+
+planned_extensions:
+  - atmospheric attenuation and visibility
+  - coherent optical link budget and receiver noise
+  - packet error rate, goodput, and latency
+  - multi-target reflectivity and cross-section models
+  - camera localization uncertainty
+  - ADB glare and retained-illumination metrics
+  - model-selection and optimization labels

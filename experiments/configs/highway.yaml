@@ -1,0 +1,32 @@
+name: highway-snr-sweep
+
+# Replace this reference with the project scenario adapter used for the experiment.
+# The callable must accept (parameters: dict, rng: numpy.random.Generator)
+# and return optical_iscai.sequence.SequenceResult.
+simulator: optical_iscai.scenarios:simulate_highway
+
+output: results/highway-snr-sweep
+overwrite: false
+
+monte_carlo:
+  repetitions: 100
+  seed: 42
+
+evaluation:
+  range_gate_m: 5.0
+  velocity_gate_m_s: 3.0
+  confirmed_only: true
+
+parameters:
+  frame_count: 32
+  frame_interval_s: 0.001
+  target_count: 3
+  visibility_m: 10000.0
+
+sweep:
+  snr_db: [-20, -15, -10, -5, 0, 5, 10, 15, 20]
+
+metadata:
+  scenario: highway
+  purpose: sensing performance versus SNR
+  reference: Phase-coded FMCW Laser Headlamp for Integrated Sensing, Communication, and Illumination

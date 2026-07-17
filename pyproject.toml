@@ -24,6 +24,7 @@ dev = [
 
 [project.scripts]
 optical-iscai-generate = "optical_iscai.generate:main"
+optical-iscai-run = "optical_iscai.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
